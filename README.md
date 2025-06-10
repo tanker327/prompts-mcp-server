@@ -2,6 +2,31 @@
 
 A Model Context Protocol (MCP) server for managing and providing prompts. This server allows users and LLMs to easily add, retrieve, and manage prompt templates stored as markdown files with YAML frontmatter support.
 
+## Quick Start
+
+```bash
+# 1. Install
+git clone https://github.com/tanker327/prompts-mcp-server.git
+cd prompts-mcp-server
+npm install && npm run build
+
+# 2. Test it works
+npm test
+
+# 3. Add to your MCP client config (e.g., Claude Desktop)
+# Add this to ~/Library/Application Support/Claude/claude_desktop_config.json:
+{
+  "mcpServers": {
+    "prompts-mcp-server": {
+      "command": "node",
+      "args": ["/path/to/prompts-mcp-server/dist/index.js"]
+    }
+  }
+}
+
+# 4. Restart your MCP client and start using the tools!
+```
+
 ## Features
 
 - **Add Prompts**: Store new prompts as markdown files with YAML frontmatter
@@ -17,24 +42,54 @@ A Model Context Protocol (MCP) server for managing and providing prompts. This s
 
 ## Installation
 
-1. Install dependencies:
+### Option 1: From GitHub (Recommended)
+
 ```bash
+# Clone the repository
+git clone https://github.com/tanker327/prompts-mcp-server.git
+cd prompts-mcp-server
+
+# Install dependencies
 npm install
-```
 
-2. Build the TypeScript code:
-```bash
+# Build the TypeScript code
 npm run build
+
+# Test the installation
+npm test
 ```
 
-3. Start the server:
-```bash
-npm start
-```
+### Option 2: Direct Download
 
-For development with auto-reload:
+1. Download the latest release from GitHub
+2. Extract to your desired location
+3. Run installation steps above
+
+### Option 3: Development Setup
+
 ```bash
+# Clone and set up for development
+git clone https://github.com/tanker327/prompts-mcp-server.git
+cd prompts-mcp-server
+npm install
+
+# Start development server with auto-reload
 npm run dev
+
+# Run tests in watch mode
+npm run test:watch
+```
+
+### Verification
+
+After installation, verify the server works:
+
+```bash
+# Start the server (should show no errors)
+npm start
+
+# Or test with MCP Inspector
+npx @modelcontextprotocol/inspector node dist/index.js
 ```
 
 ## Testing
@@ -215,12 +270,140 @@ version: "1.0"
 Your prompt content goes here...
 ```
 
-## Configuration
+## MCP Client Configuration
+
+This server can be configured with various MCP-compatible applications. Here are setup instructions for popular clients:
+
+### Claude Desktop
+
+Add this to your Claude Desktop configuration file:
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "prompts-mcp-server": {
+      "command": "node",
+      "args": ["/path/to/prompts-mcp-server/dist/index.js"],
+      "env": {
+        "PROMPTS_DIR": "/path/to/your/prompts/directory"
+      }
+    }
+  }
+}
+```
+
+### Cline (VS Code Extension)
+
+Add to your Cline MCP settings in VS Code:
+
+```json
+{
+  "cline.mcp.servers": {
+    "prompts-mcp-server": {
+      "command": "node",
+      "args": ["/path/to/prompts-mcp-server/dist/index.js"],
+      "env": {
+        "PROMPTS_DIR": "/path/to/your/prompts/directory"
+      }
+    }
+  }
+}
+```
+
+### Continue.dev
+
+In your `~/.continue/config.json`:
+
+```json
+{
+  "mcpServers": [
+    {
+      "name": "prompts-mcp-server",
+      "command": "node",
+      "args": ["/path/to/prompts-mcp-server/dist/index.js"],
+      "env": {
+        "PROMPTS_DIR": "/path/to/your/prompts/directory"
+      }
+    }
+  ]
+}
+```
+
+### Zed Editor
+
+In your Zed settings (`~/.config/zed/settings.json`):
+
+```json
+{
+  "assistant": {
+    "mcp_servers": {
+      "prompts-mcp-server": {
+        "command": "node",
+        "args": ["/path/to/prompts-mcp-server/dist/index.js"],
+        "env": {
+          "PROMPTS_DIR": "/path/to/your/prompts/directory"
+        }
+      }
+    }
+  }
+}
+```
+
+### Custom MCP Client
+
+For any MCP-compatible application, use these connection details:
+
+- **Protocol**: Model Context Protocol (MCP)
+- **Transport**: stdio
+- **Command**: `node /path/to/prompts-mcp-server/dist/index.js`
+- **Environment Variables**: 
+  - `PROMPTS_DIR`: Custom directory for storing prompts (optional, defaults to `./prompts`)
+
+### Development/Testing Setup
+
+For development or testing with the MCP Inspector:
+
+```bash
+# Install MCP Inspector
+npm install -g @modelcontextprotocol/inspector
+
+# Run the server with inspector
+npx @modelcontextprotocol/inspector node dist/index.js
+```
+
+### Docker Configuration
+
+Create a `docker-compose.yml` for containerized deployment:
+
+```yaml
+version: '3.8'
+services:
+  prompts-mcp-server:
+    build: .
+    environment:
+      - PROMPTS_DIR=/app/prompts
+    volumes:
+      - ./prompts:/app/prompts
+    stdin_open: true
+    tty: true
+```
+
+## Server Configuration
 
 - The server automatically creates the `prompts/` directory if it doesn't exist
 - Prompt files are automatically sanitized to use safe filenames (alphanumeric characters, hyphens, and underscores only)
 - File changes are monitored in real-time and cache is updated automatically
 - Prompts directory can be customized via the `PROMPTS_DIR` environment variable
+
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PROMPTS_DIR` | Directory to store prompt files | `./prompts` |
+| `NODE_ENV` | Environment mode | `production` |
 
 ## Requirements
 
@@ -239,6 +422,63 @@ The project includes comprehensive tooling for development:
 - **Vitest**: Fast testing framework with 95 tests and 84.53% coverage
 - **ESLint**: Code linting (if configured)
 - **File Watching**: Real-time cache updates during development
+
+## Troubleshooting
+
+### Common Issues
+
+#### "Module not found" errors
+```bash
+# Ensure TypeScript is built
+npm run build
+
+# Check that dist/ directory exists and contains .js files
+ls dist/
+```
+
+#### MCP client can't connect
+1. Verify the server starts without errors: `npm start`
+2. Check the correct path is used in client configuration
+3. Ensure Node.js 18+ is installed: `node --version`
+4. Test with MCP Inspector: `npx @modelcontextprotocol/inspector node dist/index.js`
+
+#### Permission errors with prompts directory
+```bash
+# Ensure the prompts directory is writable
+mkdir -p ./prompts
+chmod 755 ./prompts
+```
+
+#### File watching not working
+- On Linux: Install `inotify-tools`
+- On macOS: No additional setup needed
+- On Windows: Ensure Windows Subsystem for Linux (WSL) or native Node.js
+
+### Debug Mode
+
+Enable debug logging by setting environment variables:
+
+```bash
+# Enable debug mode
+DEBUG=* node dist/index.js
+
+# Or with specific debug namespace
+DEBUG=prompts-mcp:* node dist/index.js
+```
+
+### Getting Help
+
+1. Check the [GitHub Issues](https://github.com/tanker327/prompts-mcp-server/issues)
+2. Review the test files for usage examples
+3. Use MCP Inspector for debugging client connections
+4. Check your MCP client's documentation for configuration details
+
+### Performance Tips
+
+- The server uses in-memory caching for fast prompt retrieval
+- File watching automatically updates the cache when files change
+- Large prompt collections (1000+ files) work efficiently due to caching
+- Consider using SSD storage for better file I/O performance
 
 ## License
 

@@ -15,54 +15,81 @@ This is an MCP (Model Context Protocol) server written in TypeScript that manage
 
 ### Core Components
 
-**MCP Server (`src/index.ts`)**
-- Implements 4 MCP tools: `add_prompt`, `get_prompt`, `list_prompts`, `delete_prompt`
-- Uses stdio transport for communication
-- Handles tool requests through `CallToolRequestSchema` and `ListToolsRequestSchema`
-- Fully typed with TypeScript interfaces for better code understanding
+**Main Server (`src/index.ts`)**
+- Entry point that orchestrates all components
+- Handles MCP server initialization and graceful shutdown
+- Registers tool handlers and connects to stdio transport
+- Minimal orchestration layer that delegates to specialized modules
 
-**Caching System**
-- `promptsCache` Map stores all prompt metadata in memory for fast access
-- Cache is populated on server startup and kept synchronized with file changes
-- `listPrompts()` returns cached data instead of reading files each time
+**Type Definitions (`src/types.ts`)**
+- Central location for all TypeScript interfaces
+- `PromptMetadata`, `PromptInfo`, `ToolArguments`, `ServerConfig`
+- Ensures type consistency across all modules
 
-**File Watcher (chokidar)**
-- Monitors `prompts/*.md` files for add/change/delete events
-- Automatically updates cache when files are modified
-- Ensures cache stays synchronized with filesystem without manual intervention
+**Caching System (`src/cache.ts`)**
+- `PromptCache` class manages in-memory prompt metadata
+- File watcher integration with chokidar for real-time updates
+- Handles cache initialization, updates, and cleanup
+- Provides methods for cache access and management
 
-**YAML Frontmatter Support (gray-matter)**
-- Prompts support structured metadata in YAML frontmatter
-- Metadata fields: `title`, `description`, `category`, `tags`, `difficulty`, `author`, `version`
-- `list_prompts` displays both metadata and content preview
+**File Operations (`src/fileOperations.ts`)**
+- `PromptFileOperations` class handles all file I/O
+- CRUD operations: create, read, update, delete prompts
+- Filename sanitization and directory management
+- Integrates with cache for optimal performance
+
+**MCP Tools (`src/tools.ts`)**
+- `PromptTools` class implements MCP tool definitions and handlers
+- Handles all 4 MCP tools: `add_prompt`, `get_prompt`, `list_prompts`, `delete_prompt`
+- Tool validation, execution, and response formatting
+- Clean separation between MCP protocol and business logic
+
+### Module Dependencies
+
+```
+index.ts (main)
+├── cache.ts (PromptCache)
+├── fileOperations.ts (PromptFileOperations)
+│   └── cache.ts (dependency)
+├── tools.ts (PromptTools)
+│   └── fileOperations.ts (dependency)
+└── types.ts (shared interfaces)
+```
 
 ### Data Flow
 
-1. **Startup**: Cache initialized from all `.md` files in `prompts/` directory
-2. **File Changes**: Watcher detects changes and updates cache automatically  
-3. **MCP Requests**: Tools operate on cached data for performance
-4. **File Operations**: `add_prompt`/`delete_prompt` write to filesystem, watcher updates cache
+1. **Startup**: Main orchestrates cache initialization and file watcher setup
+2. **File Changes**: PromptCache detects changes and updates cache automatically  
+3. **MCP Requests**: PromptTools delegates to PromptFileOperations which uses cached data
+4. **File Operations**: PromptFileOperations writes to filesystem, cache auto-updates via watcher
 
-### File Naming
+### Testing Strategy
 
-- Prompt names are sanitized using `sanitizeFileName()`: alphanumeric, hyphens, underscores only
-- All prompts stored as `.md` files in `prompts/` directory
-- Filename format: `{sanitized_name}.md`
+Modular design enables easy unit testing:
+- Each class can be tested in isolation with dependency injection
+- Cache operations can be tested without file I/O
+- File operations can be tested with mock cache
+- Tool handlers can be tested with mock file operations
 
 ## Key Implementation Details
 
-- **TypeScript**: Full type safety with interfaces for `PromptMetadata`, `PromptInfo`, and `ToolArguments`
+- **Modular Architecture**: Clean separation of concerns across 5 focused modules
+- **TypeScript**: Full type safety with centralized type definitions
 - **Build Process**: TypeScript compiles to `dist/` directory, source in `src/`
 - **Development**: Uses `tsx` for hot-reload during development
+- **Dependency Injection**: Classes accept dependencies via constructor for testability
+- **Graceful Shutdown**: Proper cleanup of file watchers and resources
 - Server communicates via stdio (not HTTP)
 - ES modules used throughout (`type: "module"` in package.json)
 - Error handling returns MCP-compatible error responses with `isError: true`
 - Console.error() used for logging (stderr) to avoid interfering with stdio transport
-- Cache initialization is lazy - falls back if cache is empty when `listPrompts()` called
 
-## Type Definitions
+## Module Overview
 
-Key TypeScript interfaces that define the data structures:
-- `PromptMetadata`: YAML frontmatter structure with optional fields like title, description, category, tags, difficulty
-- `PromptInfo`: Complete prompt information including name, metadata, and preview
-- `ToolArguments`: MCP tool arguments structure for type-safe parameter handling
+- **`types.ts`**: Shared interfaces and type definitions
+- **`cache.ts`**: In-memory caching with file watching (PromptCache class)
+- **`fileOperations.ts`**: File I/O operations (PromptFileOperations class)  
+- **`tools.ts`**: MCP tool definitions and handlers (PromptTools class)
+- **`index.ts`**: Main orchestration and server setup
+
+Each module is independently testable and has a single responsibility.

@@ -23,6 +23,7 @@ describe('PromptCache', () => {
     tempDir = await createTempDir();
     cache = new PromptCache(tempDir);
     consoleErrorSpy = mockConsoleError();
+    vi.clearAllMocks();
   });
 
   afterEach(async () => {
@@ -169,18 +170,9 @@ describe('PromptCache', () => {
       // Create a valid file first
       await createTestPromptFile(tempDir, 'valid-prompt');
       
-      // Mock fs.readFile to throw an error for a specific file
+      // Create an invalid file by creating a directory with .md extension
       const fs = await import('fs/promises');
-      const originalReadFile = fs.readFile;
-      vi.spyOn(fs, 'readFile').mockImplementation(async (path, ...args) => {
-        if (path.toString().includes('invalid')) {
-          throw new Error('Mock read error');
-        }
-        return originalReadFile(path, ...args);
-      });
-      
-      // Create an "invalid" file by manipulating the directory
-      await fs.writeFile(`${tempDir}/invalid.md`, 'content');
+      await fs.mkdir(`${tempDir}/invalid.md`, { recursive: true });
       
       await cache.initializeCache();
       
@@ -188,10 +180,8 @@ describe('PromptCache', () => {
       expect(cache.size()).toBe(1);
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         expect.stringContaining('Failed to load prompt metadata for invalid.md'),
-        'Mock read error'
+        expect.any(String)
       );
-      
-      fs.readFile.mockRestore();
     });
 
     it('should log successful cache initialization', async () => {

@@ -4,6 +4,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
+import os from 'os';
 import { vi } from 'vitest';
 import { PromptInfo, PromptMetadata } from '../../src/types.js';
 
@@ -11,8 +12,7 @@ import { PromptInfo, PromptMetadata } from '../../src/types.js';
  * Create a temporary directory for testing
  */
 export async function createTempDir(): Promise<string> {
-  const tempDir = path.join(process.cwd(), 'temp-test-' + Date.now());
-  await fs.mkdir(tempDir, { recursive: true });
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'prompts-test-'));
   return tempDir;
 }
 
@@ -36,6 +36,9 @@ export async function createTestPromptFile(
   metadata: PromptMetadata = {},
   content: string = 'Test prompt content'
 ): Promise<string> {
+  // Ensure directory exists
+  await fs.mkdir(dir, { recursive: true });
+  
   const frontmatter = Object.keys(metadata).length > 0
     ? `---\n${Object.entries(metadata).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')}\n---\n\n`
     : '';

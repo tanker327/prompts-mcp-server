@@ -45,7 +45,7 @@ describe('Main Server Integration', () => {
       const config = {
         name: 'prompts-mcp-server',
         version: '1.0.0',
-        promptsDir: expect.any(String)
+        promptsDir: '/test/path'
       };
 
       expect(config.name).toBe('prompts-mcp-server');
@@ -86,7 +86,7 @@ describe('Main Server Integration', () => {
 
       // Test tools
       const toolDefinitions = tools.getToolDefinitions();
-      expect(toolDefinitions.tools).toHaveLength(4);
+      expect(toolDefinitions.tools).toHaveLength(5);
 
       // Cleanup
       await cache.cleanup();

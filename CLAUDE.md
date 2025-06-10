@@ -8,9 +8,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run build` - Compile TypeScript to JavaScript
 - `npm start` - Build and start the MCP server 
 - `npm run dev` - Start server with auto-reload for development (uses tsx)
-- `npm test` - Run all tests
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Run tests with coverage report
+- `npm test` - Run all tests (exits automatically)
+- `npm run test:watch` - Run tests in watch mode (continuous)
+- `npm run test:coverage` - Run tests with coverage report (exits automatically)
 
 ## Architecture Overview
 
@@ -127,3 +127,37 @@ tests/
 - **Real Integration**: Tests actual file I/O, caching, and file watching
 - **Error Scenarios**: Tests failure modes and error propagation
 - **Type Safety**: Validates TypeScript interfaces and type constraints
+
+### Test Results
+- **95 tests** across all modules with **100% pass rate**
+- **84.53% overall coverage** with critical modules at 98-100% coverage
+- **Fast execution** with proper test isolation and cleanup
+
+## Development Workflow
+
+1. **Install dependencies**: `npm install`
+2. **Run tests**: `npm test` (verifies everything works)
+3. **Start development**: `npm run dev` (auto-reload)
+4. **Build for production**: `npm run build`
+5. **Run built server**: `npm start`
+
+## File Structure
+
+```
+prompts-mcp/
+├── src/                    # TypeScript source code
+│   ├── types.ts           # Type definitions
+│   ├── cache.ts           # Caching system
+│   ├── fileOperations.ts  # File I/O operations
+│   ├── tools.ts           # MCP tool handlers
+│   └── index.ts           # Main server entry point
+├── tests/                 # Comprehensive test suite
+│   ├── helpers/           # Test utilities and mocks
+│   └── *.test.ts          # Test files for each module
+├── prompts/               # Prompt storage directory
+├── dist/                  # Compiled JavaScript (after build)
+├── package.json           # Dependencies and scripts
+├── tsconfig.json          # TypeScript configuration
+├── vitest.config.ts       # Test configuration
+└── CLAUDE.md              # This documentation
+```

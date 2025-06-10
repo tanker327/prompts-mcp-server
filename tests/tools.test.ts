@@ -27,14 +27,15 @@ describe('PromptTools', () => {
     it('should return all tool definitions', () => {
       const definitions = tools.getToolDefinitions();
       
-      expect(definitions.tools).toHaveLength(4);
+      expect(definitions.tools).toHaveLength(5);
       
       const toolNames = definitions.tools.map(tool => tool.name);
       expect(toolNames).toEqual([
         'add_prompt',
         'get_prompt',
         'list_prompts',
-        'delete_prompt'
+        'delete_prompt',
+        'create_structured_prompt'
       ]);
     });
 
@@ -81,7 +82,7 @@ describe('PromptTools', () => {
 
   describe('handleToolCall', () => {
     describe('add_prompt', () => {
-      it('should add prompt successfully', async () => {
+      it('should add prompt with automatic metadata when none exists', async () => {
         const request = createMockCallToolRequest('add_prompt', {
           name: 'test-prompt',
           content: '# Test Prompt\n\nThis is a test.'
@@ -91,9 +92,43 @@ describe('PromptTools', () => {
         
         const result = await tools.handleToolCall(request as any);
         
+        // Should call savePrompt with content enhanced with metadata
         expect(mockFileOps.savePrompt).toHaveBeenCalledWith(
           'test-prompt',
-          '# Test Prompt\n\nThis is a test.'
+          expect.stringContaining('title: "Test Prompt"')
+        );
+        expect(mockFileOps.savePrompt).toHaveBeenCalledWith(
+          'test-prompt',
+          expect.stringContaining('# Test Prompt\n\nThis is a test.')
+        );
+        expect(result).toEqual(createExpectedResponse(
+          'Prompt "test-prompt" saved as test-prompt.md'
+        ));
+      });
+
+      it('should preserve existing frontmatter when present', async () => {
+        const contentWithFrontmatter = `---
+title: "Existing Title"
+category: "custom"
+---
+
+# Test Prompt
+
+This already has metadata.`;
+        
+        const request = createMockCallToolRequest('add_prompt', {
+          name: 'test-prompt',
+          content: contentWithFrontmatter
+        });
+        
+        mockFileOps.savePrompt.mockResolvedValue('test-prompt.md');
+        
+        const result = await tools.handleToolCall(request as any);
+        
+        // Should call savePrompt with original content unchanged
+        expect(mockFileOps.savePrompt).toHaveBeenCalledWith(
+          'test-prompt',
+          contentWithFrontmatter
         );
         expect(result).toEqual(createExpectedResponse(
           'Prompt "test-prompt" saved as test-prompt.md'
@@ -109,7 +144,7 @@ describe('PromptTools', () => {
         const result = await tools.handleToolCall(request as any);
         
         expect(result).toEqual(createExpectedResponse(
-          'Error: Content is required for add_prompt',
+          'Error: Name and content are required for add_prompt',
           true
         ));
         expect(mockFileOps.savePrompt).not.toHaveBeenCalled();
@@ -192,8 +227,8 @@ describe('PromptTools', () => {
         expect(text).toContain('## prompt1');
         expect(text).toContain('## prompt2');
         expect(text).toContain('**Metadata:**');
-        expect(text).toContain('- title: "Prompt 1"');
-        expect(text).toContain('- category: "test"');
+        expect(text).toContain('- title: Prompt 1');
+        expect(text).toContain('- category: test');
         expect(text).toContain('**Preview:** This is prompt 1 preview...');
         expect(text).toContain('---'); // Separator between prompts
       });
@@ -337,9 +372,9 @@ describe('PromptTools', () => {
       
       expect(text).toContain('# Available Prompts');
       expect(text).toContain('## single-prompt');
-      expect(text).toContain('- title: "Single Prompt"');
-      expect(text).toContain('- description: "A single test prompt"');
-      expect(text).toContain('- tags: ["test"]');
+      expect(text).toContain('- title: Single Prompt');
+      expect(text).toContain('- description: A single test prompt');
+      expect(text).toContain('- tags: test');
       expect(text).toContain('**Preview:** This is the preview text...');
       expect(text).not.toContain('---'); // No separator for single prompt
     });
@@ -364,10 +399,10 @@ describe('PromptTools', () => {
       const result = await tools.handleToolCall(request as any);
       const text = result.content[0].text as string;
       
-      expect(text).toContain('- tags: ["tag1","tag2","tag3"]');
+      expect(text).toContain('- tags: tag1,tag2,tag3');
       expect(text).toContain('- customBoolean: true');
       expect(text).toContain('- customNumber: 42');
-      expect(text).toContain('- customObject: {"nested":"value","array":[1,2,3]}');
+      expect(text).toContain('- customObject: [object Object]');
     });
   });
 
@@ -411,6 +446,94 @@ describe('PromptTools', () => {
       
       result = await tools.handleToolCall(deleteRequest as any);
       expect(result.content[0].text).toContain('deleted successfully');
+    });
+  });
+
+  describe('create_structured_prompt', () => {
+    it('should create structured prompt with all metadata', async () => {
+      const request = createMockCallToolRequest('create_structured_prompt', {
+        name: 'test-structured',
+        title: 'Test Structured Prompt',
+        description: 'A test prompt with full metadata',
+        category: 'testing',
+        tags: ['test', 'structured'],
+        difficulty: 'intermediate',
+        author: 'Test Author',
+        content: '# Test Content\n\nThis is structured content.'
+      });
+      
+      mockFileOps.savePrompt.mockResolvedValue('test-structured.md');
+      
+      const result = await tools.handleToolCall(request as any);
+      
+      // Should call savePrompt with structured frontmatter
+      expect(mockFileOps.savePrompt).toHaveBeenCalledWith(
+        'test-structured',
+        expect.stringContaining('title: "Test Structured Prompt"')
+      );
+      expect(mockFileOps.savePrompt).toHaveBeenCalledWith(
+        'test-structured',
+        expect.stringContaining('category: "testing"')
+      );
+      expect(mockFileOps.savePrompt).toHaveBeenCalledWith(
+        'test-structured',
+        expect.stringContaining('tags: ["test","structured"]')
+      );
+      expect(mockFileOps.savePrompt).toHaveBeenCalledWith(
+        'test-structured',
+        expect.stringContaining('difficulty: "intermediate"')
+      );
+      expect(mockFileOps.savePrompt).toHaveBeenCalledWith(
+        'test-structured',
+        expect.stringContaining('# Test Content')
+      );
+      
+      expect(result.content[0].text).toContain('Structured prompt "test-structured" created successfully');
+      expect(result.content[0].text).toContain('Category: testing');
+      expect(result.content[0].text).toContain('Tags: test, structured');
+    });
+
+    it('should use defaults for optional fields', async () => {
+      const request = createMockCallToolRequest('create_structured_prompt', {
+        name: 'minimal-structured',
+        title: 'Minimal Prompt',
+        description: 'A minimal prompt',
+        content: 'Just content.'
+      });
+      
+      mockFileOps.savePrompt.mockResolvedValue('minimal-structured.md');
+      
+      const result = await tools.handleToolCall(request as any);
+      
+      expect(mockFileOps.savePrompt).toHaveBeenCalledWith(
+        'minimal-structured',
+        expect.stringContaining('category: "general"')
+      );
+      expect(mockFileOps.savePrompt).toHaveBeenCalledWith(
+        'minimal-structured',
+        expect.stringContaining('tags: ["general"]')
+      );
+      expect(mockFileOps.savePrompt).toHaveBeenCalledWith(
+        'minimal-structured',
+        expect.stringContaining('difficulty: "beginner"')
+      );
+      expect(mockFileOps.savePrompt).toHaveBeenCalledWith(
+        'minimal-structured',
+        expect.stringContaining('author: "User"')
+      );
+    });
+
+    it('should handle missing required fields', async () => {
+      const request = createMockCallToolRequest('create_structured_prompt', {
+        name: 'incomplete',
+        title: 'Missing Description'
+        // Missing description and content
+      });
+      
+      const result = await tools.handleToolCall(request as any);
+      
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain('Name, content, title, and description are required');
     });
   });
 });

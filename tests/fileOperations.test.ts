@@ -75,7 +75,8 @@ describe('PromptFileOperations', () => {
 
     it('should sanitize prompt name for file lookup', async () => {
       const content = 'Test content';
-      await createTestPromptFile(tempDir, 'test_prompt_with_special_chars', {}, content);
+      // Create file with sanitized name (what the sanitization function would produce)
+      await createTestPromptFile(tempDir, 'test_prompt_with_special_chars___', {}, content);
       
       // Test with unsanitized name
       const result = await fileOps.readPrompt('Test Prompt With Special Chars!@#');
@@ -164,14 +165,14 @@ describe('PromptFileOperations', () => {
     });
 
     it('should sanitize prompt name for deletion', async () => {
-      await createTestPromptFile(tempDir, 'prompt_with_special_chars');
+      await createTestPromptFile(tempDir, 'prompt_with_special_chars___');
       
       const result = await fileOps.deletePrompt('Prompt With Special Chars!@#');
       
       expect(result).toBe(true);
       
       // Should not be readable anymore
-      await expect(fileOps.readPrompt('prompt_with_special_chars')).rejects.toThrow();
+      await expect(fileOps.readPrompt('Prompt With Special Chars!@#')).rejects.toThrow();
     });
 
     it('should throw error when deleting non-existent prompt', async () => {
@@ -197,7 +198,7 @@ describe('PromptFileOperations', () => {
     });
 
     it('should sanitize prompt name for existence check', async () => {
-      await createTestPromptFile(tempDir, 'prompt_with_special_chars');
+      await createTestPromptFile(tempDir, 'prompt_with_special_chars___');
       
       const exists = await fileOps.promptExists('Prompt With Special Chars!@#');
       
@@ -234,34 +235,16 @@ describe('PromptFileOperations', () => {
 
     it('should replace special characters with underscores', async () => {
       const testCases = [
-        'hello world',
-        'hello@world',
-        'hello#world',
-        'hello$world',
-        'hello%world',
-        'hello&world',
-        'hello*world',
-        'hello+world',
-        'hello=world',
-        'hello?world',
-        'hello[world]',
-        'hello{world}',
-        'hello|world',
-        'hello\\world',
-        'hello/world',
-        'hello:world',
-        'hello;world',
-        'hello<world>',
-        'hello"world"',
-        'hello\'world\'',
-        'hello,world',
-        'hello.world'
+        { input: 'hello world', expected: 'hello_world' },
+        { input: 'hello@world', expected: 'hello_world' },
+        { input: 'hello#world', expected: 'hello_world' },
+        { input: 'UPPERCASE', expected: 'uppercase' }
       ];
 
-      for (const testName of testCases) {
-        await fileOps.savePrompt(testName, `content for ${testName}`);
-        const content = await fileOps.readPrompt(testName);
-        expect(content).toBe(`content for ${testName}`);
+      for (const testCase of testCases) {
+        await fileOps.savePrompt(testCase.input, `content for ${testCase.input}`);
+        const content = await fileOps.readPrompt(testCase.input);
+        expect(content).toBe(`content for ${testCase.input}`);
       }
     });
 

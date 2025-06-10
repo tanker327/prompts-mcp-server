@@ -59,9 +59,20 @@ npm run test:watch
 The server provides the following tools:
 
 ### `add_prompt`
-Add a new prompt to the collection.
+Add a new prompt to the collection. If no YAML frontmatter is provided, default metadata will be automatically added.
 - **name** (string): Name of the prompt
 - **content** (string): Content of the prompt in markdown format with optional YAML frontmatter
+
+### `create_structured_prompt`
+Create a new prompt with guided metadata structure and validation.
+- **name** (string): Name of the prompt
+- **title** (string): Human-readable title for the prompt
+- **description** (string): Brief description of what the prompt does
+- **category** (string, optional): Category (defaults to "general")
+- **tags** (array, optional): Array of tags for categorization (defaults to ["general"])
+- **difficulty** (string, optional): "beginner", "intermediate", or "advanced" (defaults to "beginner")
+- **author** (string, optional): Author of the prompt (defaults to "User")
+- **content** (string): The actual prompt content (markdown)
 
 ### `get_prompt` 
 Retrieve a prompt by name.
@@ -78,21 +89,33 @@ Delete a prompt by name.
 
 Once connected to an MCP client, you can use the tools like this:
 
+### Method 1: Quick prompt creation with automatic metadata
 ```javascript
-// Add a new prompt with YAML frontmatter
+// Add a prompt without frontmatter - metadata will be added automatically
 add_prompt({
-  name: "code_review",
-  content: `---
-title: "Code Review Assistant"
-description: "Helps review code for best practices and potential issues"
-category: "development"
-tags: ["code", "review", "quality"]
-difficulty: "intermediate"
-author: "Development Team"
-version: "1.0"
----
+  name: "debug_helper",
+  content: `# Debug Helper
 
-# Code Review Prompt
+Help me debug this issue by:
+1. Analyzing the error message
+2. Suggesting potential causes
+3. Recommending debugging steps`
+})
+// This automatically adds default frontmatter with title "Debug Helper", category "general", etc.
+```
+
+### Method 2: Structured prompt creation with full metadata control
+```javascript
+// Create a prompt with explicit metadata using the structured tool
+create_structured_prompt({
+  name: "code_review",
+  title: "Code Review Assistant",
+  description: "Helps review code for best practices and potential issues",
+  category: "development",
+  tags: ["code", "review", "quality"],
+  difficulty: "intermediate",
+  author: "Development Team",
+  content: `# Code Review Prompt
 
 Please review the following code for:
 - Code quality and best practices
@@ -103,7 +126,27 @@ Please review the following code for:
 ## Code to Review
 [Insert code here]`
 })
+```
 
+### Method 3: Manual frontmatter (preserves existing metadata)
+```javascript
+// Add a prompt with existing frontmatter - no changes made
+add_prompt({
+  name: "custom_prompt",
+  content: `---
+title: "Custom Assistant"
+category: "specialized"
+tags: ["custom", "specific"]
+difficulty: "advanced"
+---
+
+# Custom Prompt Content
+Your specific prompt here...`
+})
+```
+
+### Other operations
+```javascript
 // Get a prompt
 get_prompt({ name: "code_review" })
 

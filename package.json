@@ -8,9 +8,9 @@
     "build": "tsc",
     "start": "npm run build && node dist/index.js",
     "dev": "tsx --watch src/index.ts",
-    "test": "vitest",
-    "test:watch": "vitest --watch",
-    "test:coverage": "vitest --coverage"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": ["mcp", "prompts", "ai", "llm"],
   "author": "",

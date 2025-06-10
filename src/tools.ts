@@ -30,12 +30,16 @@ export class PromptTools {
                 type: 'string',
                 description: 'Name of the prompt',
               },
+              filename: {
+                type: 'string',
+                description: 'English filename for the prompt file (without .md extension)',
+              },
               content: {
                 type: 'string',
                 description: 'Content of the prompt in markdown format',
               },
             },
-            required: ['name', 'content'],
+            required: ['name', 'filename', 'content'],
           },
         },
         {
@@ -162,14 +166,14 @@ export class PromptTools {
    * Handle add_prompt tool
    */
   private async handleAddPrompt(args: ToolArguments): Promise<CallToolResult> {
-    if (!args.name || !args.content) {
-      throw new Error('Name and content are required for add_prompt');
+    if (!args.name || !args.filename || !args.content) {
+      throw new Error('Name, filename, and content are required for add_prompt');
     }
     
     // Validate and enhance content with metadata if needed
     const processedContent = this.ensureMetadata(args.content, args.name);
     
-    const fileName = await this.fileOps.savePrompt(args.name, processedContent);
+    const fileName = await this.fileOps.savePromptWithFilename(args.filename, processedContent);
     return {
       content: [
         {

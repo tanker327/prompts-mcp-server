@@ -45,8 +45,9 @@ describe('PromptTools', () => {
       
       expect(addPromptTool).toBeDefined();
       expect(addPromptTool?.description).toBe('Add a new prompt to the collection');
-      expect(addPromptTool?.inputSchema.required).toEqual(['name', 'content']);
+      expect(addPromptTool?.inputSchema.required).toEqual(['name', 'filename', 'content']);
       expect(addPromptTool?.inputSchema.properties).toHaveProperty('name');
+      expect(addPromptTool?.inputSchema.properties).toHaveProperty('filename');
       expect(addPromptTool?.inputSchema.properties).toHaveProperty('content');
     });
 
@@ -85,24 +86,25 @@ describe('PromptTools', () => {
       it('should add prompt with automatic metadata when none exists', async () => {
         const request = createMockCallToolRequest('add_prompt', {
           name: 'test-prompt',
+          filename: 'test-prompt-file',
           content: '# Test Prompt\n\nThis is a test.'
         });
         
-        mockFileOps.savePrompt.mockResolvedValue('test-prompt.md');
+        mockFileOps.savePromptWithFilename.mockResolvedValue('test-prompt-file.md');
         
         const result = await tools.handleToolCall(request as any);
         
-        // Should call savePrompt with content enhanced with metadata
-        expect(mockFileOps.savePrompt).toHaveBeenCalledWith(
-          'test-prompt',
+        // Should call savePromptWithFilename with content enhanced with metadata
+        expect(mockFileOps.savePromptWithFilename).toHaveBeenCalledWith(
+          'test-prompt-file',
           expect.stringContaining('title: "Test Prompt"')
         );
-        expect(mockFileOps.savePrompt).toHaveBeenCalledWith(
-          'test-prompt',
+        expect(mockFileOps.savePromptWithFilename).toHaveBeenCalledWith(
+          'test-prompt-file',
           expect.stringContaining('# Test Prompt\n\nThis is a test.')
         );
         expect(result).toEqual(createExpectedResponse(
-          'Prompt "test-prompt" saved as test-prompt.md'
+          'Prompt "test-prompt" saved as test-prompt-file.md'
         ));
       });
 
@@ -118,33 +120,34 @@ This already has metadata.`;
         
         const request = createMockCallToolRequest('add_prompt', {
           name: 'test-prompt',
+          filename: 'test-prompt-file',
           content: contentWithFrontmatter
         });
         
-        mockFileOps.savePrompt.mockResolvedValue('test-prompt.md');
+        mockFileOps.savePromptWithFilename.mockResolvedValue('test-prompt-file.md');
         
         const result = await tools.handleToolCall(request as any);
         
-        // Should call savePrompt with original content unchanged
-        expect(mockFileOps.savePrompt).toHaveBeenCalledWith(
-          'test-prompt',
+        // Should call savePromptWithFilename with original content unchanged
+        expect(mockFileOps.savePromptWithFilename).toHaveBeenCalledWith(
+          'test-prompt-file',
           contentWithFrontmatter
         );
         expect(result).toEqual(createExpectedResponse(
-          'Prompt "test-prompt" saved as test-prompt.md'
+          'Prompt "test-prompt" saved as test-prompt-file.md'
         ));
       });
 
       it('should handle missing content parameter', async () => {
         const request = createMockCallToolRequest('add_prompt', {
           name: 'test-prompt'
-          // content is missing
+          // filename and content are missing
         });
         
         const result = await tools.handleToolCall(request as any);
         
         expect(result).toEqual(createExpectedResponse(
-          'Error: Name and content are required for add_prompt',
+          'Error: Name, filename, and content are required for add_prompt',
           true
         ));
         expect(mockFileOps.savePrompt).not.toHaveBeenCalled();
@@ -153,10 +156,11 @@ This already has metadata.`;
       it('should handle file operation errors', async () => {
         const request = createMockCallToolRequest('add_prompt', {
           name: 'test-prompt',
+          filename: 'test-prompt-file',
           content: 'test content'
         });
         
-        mockFileOps.savePrompt.mockRejectedValue(new Error('Disk full'));
+        mockFileOps.savePromptWithFilename.mockRejectedValue(new Error('Disk full'));
         
         const result = await tools.handleToolCall(request as any);
         
@@ -411,13 +415,14 @@ This already has metadata.`;
       // Add a prompt
       const addRequest = createMockCallToolRequest('add_prompt', {
         name: 'workflow-test',
+        filename: 'workflow-test-file',
         content: '# Workflow Test\n\nTest content'
       });
       
-      mockFileOps.savePrompt.mockResolvedValue('workflow-test.md');
+      mockFileOps.savePromptWithFilename.mockResolvedValue('workflow-test-file.md');
       
       let result = await tools.handleToolCall(addRequest as any);
-      expect(result.content[0].text).toContain('saved as workflow-test.md');
+      expect(result.content[0].text).toContain('saved as workflow-test-file.md');
       
       // List prompts
       const listRequest = createMockCallToolRequest('list_prompts', {});

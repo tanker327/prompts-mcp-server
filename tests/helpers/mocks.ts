@@ -36,6 +36,7 @@ export class MockPromptFileOperations {
   listPrompts = vi.fn();
   readPrompt = vi.fn();
   savePrompt = vi.fn();
+  savePromptWithFilename = vi.fn();
   deletePrompt = vi.fn();
   promptExists = vi.fn();
   getPromptInfo = vi.fn();

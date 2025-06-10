@@ -69,6 +69,17 @@ export class PromptFileOperations {
   }
 
   /**
+   * Save a new prompt with a custom filename
+   */
+  async savePromptWithFilename(filename: string, content: string): Promise<string> {
+    await this.ensurePromptsDir();
+    const sanitizedFileName = this.sanitizeFileName(filename) + '.md';
+    const filePath = path.join(this.promptsDir, sanitizedFileName);
+    await fs.writeFile(filePath, content, 'utf-8');
+    return sanitizedFileName;
+  }
+
+  /**
    * Delete a prompt by name
    */
   async deletePrompt(name: string): Promise<boolean> {

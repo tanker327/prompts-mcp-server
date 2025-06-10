@@ -21,6 +21,7 @@ export interface PromptInfo {
 
 export interface ToolArguments {
   name?: string;
+  filename?: string;
   content?: string;
   // Fields for create_structured_prompt
   title?: string;

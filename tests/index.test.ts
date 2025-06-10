@@ -109,39 +109,40 @@ describe('Main Server Integration', () => {
           name: 'add_prompt',
           arguments: {
             name: 'e2e-test',
+            filename: 'e2e_test',
             content: '---\ntitle: "E2E Test"\ncategory: "testing"\n---\n\n# E2E Test Prompt\n\nThis is an end-to-end test.'
           }
         }
       };
 
       const addResult = await tools.handleToolCall(addRequest as any);
-      expect(addResult.content[0].text).toContain('saved as e2e-test.md');
+      expect(addResult.content[0].text).toContain('saved as e2e_test.md');
 
       // 2. List prompts should show the new prompt
       const listRequest = { params: { name: 'list_prompts', arguments: {} } };
       const listResult = await tools.handleToolCall(listRequest as any);
-      expect(listResult.content[0].text).toContain('e2e-test');
+      expect(listResult.content[0].text).toContain('e2e_test');
       expect(listResult.content[0].text).toContain('E2E Test');
 
       // 3. Get the specific prompt
       const getRequest = {
         params: {
           name: 'get_prompt',
-          arguments: { name: 'e2e-test' }
+          arguments: { name: 'e2e_test' }
         }
       };
       const getResult = await tools.handleToolCall(getRequest as any);
       expect(getResult.content[0].text).toContain('E2E Test Prompt');
 
       // 4. Verify prompt exists in cache
-      expect(cache.getPrompt('e2e-test')?.metadata.title).toBe('E2E Test');
-      expect(cache.getPrompt('e2e-test')?.metadata.category).toBe('testing');
+      expect(cache.getPrompt('e2e_test')?.metadata.title).toBe('E2E Test');
+      expect(cache.getPrompt('e2e_test')?.metadata.category).toBe('testing');
 
       // 5. Delete the prompt
       const deleteRequest = {
         params: {
           name: 'delete_prompt',
-          arguments: { name: 'e2e-test' }
+          arguments: { name: 'e2e_test' }
         }
       };
       const deleteResult = await tools.handleToolCall(deleteRequest as any);
@@ -151,7 +152,7 @@ describe('Main Server Integration', () => {
       const getDeletedRequest = {
         params: {
           name: 'get_prompt',
-          arguments: { name: 'e2e-test' }
+          arguments: { name: 'e2e_test' }
         }
       };
       const getDeletedResult = await tools.handleToolCall(getDeletedRequest as any);

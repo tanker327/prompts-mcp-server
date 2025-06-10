@@ -8,6 +8,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run build` - Compile TypeScript to JavaScript
 - `npm start` - Build and start the MCP server 
 - `npm run dev` - Start server with auto-reload for development (uses tsx)
+- `npm test` - Run all tests
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:coverage` - Run tests with coverage report
 
 ## Architecture Overview
 
@@ -93,3 +96,34 @@ Modular design enables easy unit testing:
 - **`index.ts`**: Main orchestration and server setup
 
 Each module is independently testable and has a single responsibility.
+
+## Testing
+
+The project includes comprehensive test coverage using Vitest:
+
+### Test Structure
+```
+tests/
+├── helpers/
+│   ├── testUtils.ts    # Test utilities and helper functions
+│   └── mocks.ts        # Mock implementations for testing
+├── types.test.ts       # Type definition tests
+├── cache.test.ts       # PromptCache class tests
+├── fileOperations.test.ts  # PromptFileOperations class tests
+├── tools.test.ts       # PromptTools class tests
+└── index.test.ts       # Integration tests
+```
+
+### Test Coverage
+- **Unit Tests**: Each class tested in isolation with dependency injection
+- **Integration Tests**: End-to-end workflows and component interactions
+- **Error Handling**: Comprehensive error scenarios and edge cases
+- **File System**: Real file operations and mock scenarios
+- **MCP Protocol**: Tool definitions and request/response handling
+
+### Testing Approach
+- **Mocking**: Uses Vitest mocking for external dependencies
+- **Temporary Files**: Creates isolated temp directories for file system tests
+- **Real Integration**: Tests actual file I/O, caching, and file watching
+- **Error Scenarios**: Tests failure modes and error propagation
+- **Type Safety**: Validates TypeScript interfaces and type constraints

@@ -5,19 +5,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 - `npm install` - Install dependencies
-- `npm start` - Start the MCP server 
-- `npm run dev` - Start server with auto-reload for development
+- `npm run build` - Compile TypeScript to JavaScript
+- `npm start` - Build and start the MCP server 
+- `npm run dev` - Start server with auto-reload for development (uses tsx)
 
 ## Architecture Overview
 
-This is an MCP (Model Context Protocol) server that manages prompt templates stored as markdown files with YAML frontmatter metadata.
+This is an MCP (Model Context Protocol) server written in TypeScript that manages prompt templates stored as markdown files with YAML frontmatter metadata.
 
 ### Core Components
 
-**MCP Server (`src/index.js`)**
+**MCP Server (`src/index.ts`)**
 - Implements 4 MCP tools: `add_prompt`, `get_prompt`, `list_prompts`, `delete_prompt`
 - Uses stdio transport for communication
 - Handles tool requests through `CallToolRequestSchema` and `ListToolsRequestSchema`
+- Fully typed with TypeScript interfaces for better code understanding
 
 **Caching System**
 - `promptsCache` Map stores all prompt metadata in memory for fast access
@@ -49,8 +51,18 @@ This is an MCP (Model Context Protocol) server that manages prompt templates sto
 
 ## Key Implementation Details
 
+- **TypeScript**: Full type safety with interfaces for `PromptMetadata`, `PromptInfo`, and `ToolArguments`
+- **Build Process**: TypeScript compiles to `dist/` directory, source in `src/`
+- **Development**: Uses `tsx` for hot-reload during development
 - Server communicates via stdio (not HTTP)
 - ES modules used throughout (`type: "module"` in package.json)
 - Error handling returns MCP-compatible error responses with `isError: true`
 - Console.error() used for logging (stderr) to avoid interfering with stdio transport
 - Cache initialization is lazy - falls back if cache is empty when `listPrompts()` called
+
+## Type Definitions
+
+Key TypeScript interfaces that define the data structures:
+- `PromptMetadata`: YAML frontmatter structure with optional fields like title, description, category, tags, difficulty
+- `PromptInfo`: Complete prompt information including name, metadata, and preview
+- `ToolArguments`: MCP tool arguments structure for type-safe parameter handling

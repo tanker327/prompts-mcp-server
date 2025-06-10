@@ -2,6 +2,10 @@
 
 A Model Context Protocol (MCP) server for managing and providing prompts. This server allows users and LLMs to easily add, retrieve, and manage prompt templates stored as markdown files with YAML frontmatter support.
 
+<a href="https://glama.ai/mcp/servers/@tanker327/prompts-mcp-server">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@tanker327/prompts-mcp-server/badge" alt="Prompts Server MCP server" />
+</a>
+
 ## Quick Start
 
 ```bash

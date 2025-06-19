@@ -297,7 +297,7 @@ Add to your Cline MCP settings in VS Code:
     "prompts-mcp-server": {
       "command": "prompts-mcp-server",
       "env": {
-        "PROMPTS_DIR": "/path/to/your/prompts/directory"
+        "PROMPTS_FOLDER_PATH": "/path/to/your/prompts/directory"
       }
     }
   }
@@ -315,7 +315,7 @@ In your `~/.continue/config.json`:
       "name": "prompts-mcp-server",
       "command": "prompts-mcp-server",
       "env": {
-        "PROMPTS_DIR": "/path/to/your/prompts/directory"
+        "PROMPTS_FOLDER_PATH": "/path/to/your/prompts/directory"
       }
     }
   ]

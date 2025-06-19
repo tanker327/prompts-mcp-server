@@ -469,6 +469,16 @@ DEBUG=prompts-mcp:* node dist/index.js
 - Large prompt collections (1000+ files) work efficiently due to caching
 - Consider using SSD storage for better file I/O performance
 
+
+## Community Variants & Extensions
+
+| Project | Maintainer | Extra Features |
+|---------|-----------|----------------|
+| [smart-prompts-mcp](https://github.com/jezweb/smart-prompts-mcp) | [@jezweb](https://github.com/jezweb) | GitHub-hosted prompt libraries, advanced search & composition, richer TypeScript types, etc. |
+
+👉 Have you built something cool on top of **prompts-mcp-server**?  
+Open an issue or PR to add it here so others can discover your variant!
+
 ## License
 
 MIT

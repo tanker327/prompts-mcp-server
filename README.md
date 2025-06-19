@@ -9,26 +9,20 @@ A Model Context Protocol (MCP) server for managing and providing prompts. This s
 ## Quick Start
 
 ```bash
-# 1. Install
-git clone https://github.com/tanker327/prompts-mcp-server.git
-cd prompts-mcp-server
-npm install && npm run build
+# 1. Install from NPM
+npm install -g prompts-mcp-server
 
-# 2. Test it works
-npm test
-
-# 3. Add to your MCP client config (e.g., Claude Desktop)
+# 2. Add to your MCP client config (e.g., Claude Desktop)
 # Add this to ~/Library/Application Support/Claude/claude_desktop_config.json:
 {
   "mcpServers": {
     "prompts-mcp-server": {
-      "command": "node",
-      "args": ["/path/to/prompts-mcp-server/dist/index.js"]
+      "command": "prompts-mcp-server"
     }
   }
 }
 
-# 4. Restart your MCP client and start using the tools!
+# 3. Restart your MCP client and start using the tools!
 ```
 
 ## Features
@@ -46,7 +40,17 @@ npm test
 
 ## Installation
 
-### Option 1: From GitHub (Recommended)
+### Option 1: From NPM (Recommended)
+
+Install the package globally from NPM:
+```bash
+npm install -g prompts-mcp-server
+```
+This will make the `prompts-mcp-server` command available in your system.
+
+After installation, you need to configure your MCP client to use it. See [MCP Client Configuration](#mcp-client-configuration).
+
+### Option 2: From GitHub (for development)
 
 ```bash
 # Clone the repository
@@ -63,26 +67,11 @@ npm run build
 npm test
 ```
 
-### Option 2: Direct Download
+### Option 3: Direct Download
 
 1. Download the latest release from GitHub
 2. Extract to your desired location
-3. Run installation steps above
-
-### Option 3: Development Setup
-
-```bash
-# Clone and set up for development
-git clone https://github.com/tanker327/prompts-mcp-server.git
-cd prompts-mcp-server
-npm install
-
-# Start development server with auto-reload
-npm run dev
-
-# Run tests in watch mode
-npm run test:watch
-```
+3. Run installation steps from Option 2.
 
 ### Verification
 
@@ -93,7 +82,7 @@ After installation, verify the server works:
 npm start
 
 # Or test with MCP Inspector
-npx @modelcontextprotocol/inspector node dist/index.js
+npx @modelcontextprotocol/inspector prompts-mcp-server
 ```
 
 ## Testing
@@ -289,8 +278,7 @@ Add this to your Claude Desktop configuration file:
 {
   "mcpServers": {
     "prompts-mcp-server": {
-      "command": "node",
-      "args": ["/path/to/prompts-mcp-server/dist/index.js"],
+      "command": "prompts-mcp-server",
       "env": {
         "PROMPTS_DIR": "/path/to/your/prompts/directory"
       }
@@ -307,8 +295,7 @@ Add to your Cline MCP settings in VS Code:
 {
   "cline.mcp.servers": {
     "prompts-mcp-server": {
-      "command": "node",
-      "args": ["/path/to/prompts-mcp-server/dist/index.js"],
+      "command": "prompts-mcp-server",
       "env": {
         "PROMPTS_DIR": "/path/to/your/prompts/directory"
       }
@@ -326,8 +313,7 @@ In your `~/.continue/config.json`:
   "mcpServers": [
     {
       "name": "prompts-mcp-server",
-      "command": "node",
-      "args": ["/path/to/prompts-mcp-server/dist/index.js"],
+      "command": "prompts-mcp-server",
       "env": {
         "PROMPTS_DIR": "/path/to/your/prompts/directory"
       }
@@ -345,8 +331,7 @@ In your Zed settings (`~/.config/zed/settings.json`):
   "assistant": {
     "mcp_servers": {
       "prompts-mcp-server": {
-        "command": "node",
-        "args": ["/path/to/prompts-mcp-server/dist/index.js"],
+        "command": "prompts-mcp-server",
         "env": {
           "PROMPTS_DIR": "/path/to/your/prompts/directory"
         }
@@ -362,7 +347,7 @@ For any MCP-compatible application, use these connection details:
 
 - **Protocol**: Model Context Protocol (MCP)
 - **Transport**: stdio
-- **Command**: `node /path/to/prompts-mcp-server/dist/index.js`
+- **Command**: `prompts-mcp-server`
 - **Environment Variables**: 
   - `PROMPTS_DIR`: Custom directory for storing prompts (optional, defaults to `./prompts`)
 
@@ -375,7 +360,7 @@ For development or testing with the MCP Inspector:
 npm install -g @modelcontextprotocol/inspector
 
 # Run the server with inspector
-npx @modelcontextprotocol/inspector node dist/index.js
+npx @modelcontextprotocol/inspector prompts-mcp-server
 ```
 
 ### Docker Configuration
@@ -444,7 +429,7 @@ ls dist/
 1. Verify the server starts without errors: `npm start`
 2. Check the correct path is used in client configuration
 3. Ensure Node.js 18+ is installed: `node --version`
-4. Test with MCP Inspector: `npx @modelcontextprotocol/inspector node dist/index.js`
+4. Test with MCP Inspector: `npx @modelcontextprotocol/inspector prompts-mcp-server`
 
 #### Permission errors with prompts directory
 ```bash

@@ -36,4 +36,5 @@ export interface ServerConfig {
   name: string;
   version: string;
   promptsDir: string;
+  prompts_folder_path?: string;
 }

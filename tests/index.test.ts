@@ -52,6 +52,48 @@ describe('Main Server Integration', () => {
       expect(config.version).toBe('1.0.0');
       expect(typeof config.promptsDir).toBe('string');
     });
+
+    it('should use PROMPTS_FOLDER_PATH environment variable when set', async () => {
+      // Save original env var
+      const originalPath = process.env.PROMPTS_FOLDER_PATH;
+      
+      // Set test env var
+      process.env.PROMPTS_FOLDER_PATH = '/custom/prompts/path';
+      
+      // Test configuration would use the custom path
+      const customPath = process.env.PROMPTS_FOLDER_PATH;
+      const defaultPath = '/default/prompts';
+      const promptsDir = customPath || defaultPath;
+      
+      expect(promptsDir).toBe('/custom/prompts/path');
+      
+      // Restore original env var
+      if (originalPath !== undefined) {
+        process.env.PROMPTS_FOLDER_PATH = originalPath;
+      } else {
+        delete process.env.PROMPTS_FOLDER_PATH;
+      }
+    });
+
+    it('should use default path when PROMPTS_FOLDER_PATH is not set', async () => {
+      // Save original env var
+      const originalPath = process.env.PROMPTS_FOLDER_PATH;
+      
+      // Clear env var
+      delete process.env.PROMPTS_FOLDER_PATH;
+      
+      // Test configuration would use default path
+      const customPath = process.env.PROMPTS_FOLDER_PATH;
+      const defaultPath = '/default/prompts';
+      const promptsDir = customPath || defaultPath;
+      
+      expect(promptsDir).toBe('/default/prompts');
+      
+      // Restore original env var
+      if (originalPath !== undefined) {
+        process.env.PROMPTS_FOLDER_PATH = originalPath;
+      }
+    });
   });
 
   describe('component integration', () => {

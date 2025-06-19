@@ -280,7 +280,7 @@ Add this to your Claude Desktop configuration file:
     "prompts-mcp-server": {
       "command": "prompts-mcp-server",
       "env": {
-        "PROMPTS_DIR": "/path/to/your/prompts/directory"
+        "PROMPTS_FOLDER_PATH": "/path/to/your/prompts/directory"
       }
     }
   }
@@ -349,7 +349,7 @@ For any MCP-compatible application, use these connection details:
 - **Transport**: stdio
 - **Command**: `prompts-mcp-server`
 - **Environment Variables**: 
-  - `PROMPTS_DIR`: Custom directory for storing prompts (optional, defaults to `./prompts`)
+  - `PROMPTS_FOLDER_PATH`: Custom directory for storing prompts (optional, defaults to `./prompts`)
 
 ### Development/Testing Setup
 
@@ -373,7 +373,7 @@ services:
   prompts-mcp-server:
     build: .
     environment:
-      - PROMPTS_DIR=/app/prompts
+      - PROMPTS_FOLDER_PATH=/app/prompts
     volumes:
       - ./prompts:/app/prompts
     stdin_open: true
@@ -385,14 +385,16 @@ services:
 - The server automatically creates the `prompts/` directory if it doesn't exist
 - Prompt files are automatically sanitized to use safe filenames (alphanumeric characters, hyphens, and underscores only)
 - File changes are monitored in real-time and cache is updated automatically
-- Prompts directory can be customized via the `PROMPTS_DIR` environment variable
+- Prompts directory can be customized via the `PROMPTS_FOLDER_PATH` environment variable
 
 ### Environment Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `PROMPTS_DIR` | Directory to store prompt files | `./prompts` |
+| `PROMPTS_FOLDER_PATH` | Custom directory to store prompt files (overrides default) | (not set) |
 | `NODE_ENV` | Environment mode | `production` |
+
+> **Note**: If `PROMPTS_FOLDER_PATH` is set, it will be used as the prompts directory. If not set, the server defaults to `./prompts` relative to the server location.
 
 ## Requirements
 

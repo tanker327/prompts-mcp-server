@@ -123,6 +123,27 @@ describe('Types', () => {
       expect(config.version).toBe('1.0.0');
       expect(config.promptsDir).toBe('/path/to/prompts');
     });
+
+    it('should allow optional prompts_folder_path', () => {
+      const configWithCustomPath: ServerConfig = {
+        name: 'test-server',
+        version: '1.0.0',
+        promptsDir: '/default/prompts',
+        prompts_folder_path: '/custom/prompts'
+      };
+
+      expect(configWithCustomPath.prompts_folder_path).toBe('/custom/prompts');
+    });
+
+    it('should work without prompts_folder_path', () => {
+      const configWithoutCustomPath: ServerConfig = {
+        name: 'test-server',
+        version: '1.0.0',
+        promptsDir: '/default/prompts'
+      };
+
+      expect(configWithoutCustomPath.prompts_folder_path).toBeUndefined();
+    });
   });
 
   describe('Type compatibility', () => {

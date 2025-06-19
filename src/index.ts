@@ -21,10 +21,15 @@ import { ServerConfig } from './types.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Read configuration from environment or use defaults
+const promptsFolderPath = process.env.PROMPTS_FOLDER_PATH;
+const defaultPromptsDir = path.join(__dirname, '..', 'prompts');
+
 const config: ServerConfig = {
   name: 'prompts-mcp-server',
   version: '1.0.0',
-  promptsDir: path.join(__dirname, '..', 'prompts'),
+  promptsDir: promptsFolderPath || defaultPromptsDir,
+  ...(promptsFolderPath && { prompts_folder_path: promptsFolderPath }),
 };
 
 // Initialize components
